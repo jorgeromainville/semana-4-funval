@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from "express"; 
 import swaggerRouter from "./routes/swagger.router.js";
+import productRoutes from "./routes/product.routes.js";
 import cors from "cors";
-import pool from "./config/db.js";
 
 const port = process.env.PORT || 3000; 
 
@@ -11,25 +11,22 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Swagger Documentation
 app.use("/api/docs", swaggerRouter);
 
-app.get("/api/menu", async (req: Request, res: Response) => {
-    /* 
-       #swagger.tags = ['Menu']
-       #summary = 'Obtiene todos los productos del menú'
-       #description = 'Obtiene todos los productos del menú' 
-    */
-    try {
-        const result = await pool.query("SELECT * FROM producto;");
-        res.json(result.rows);
-    } catch (error) {
-        console.error("ERROR al consultar productos", error);
-        res.status(500).json({
-            error: "ERROR al obtener el menu"
-        });
-    }
+// Endpoint de prueba
+app.get("/", (req: Request, res: Response) => {
+    /*#swagger.tags = ['Tests']*/
+    res.json({
+        status: "Server online",
+        version: "1.0.0"
+    });
 });
+
+// Rutas de la API (MVC)
+app.use("/api", productRoutes);
 
 app.listen(port, () => {
     console.log(`URL: http://localhost:${port}`);
 });
+
