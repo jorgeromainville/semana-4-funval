@@ -1,6 +1,7 @@
 import express, { type Request, type Response } from "express"; 
 import swaggerRouter from "./routes/swagger.router.js";
 import productRoutes from "./routes/product.routes.js";
+import customerRoutes from "./routes/customer.routes.js";
 import cors from "cors";
 
 const port = process.env.PORT || 3000; 
@@ -25,6 +26,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // Rutas de la API (MVC)
 app.use("/api", productRoutes);
+app.use("/api", customerRoutes);
 
 app.listen(port, () => {
     console.log(`URL: http://localhost:${port}`);
