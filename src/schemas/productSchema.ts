@@ -16,6 +16,25 @@ export const createProductSchema = z.object({
 });
 
 export const updateProductSchema = createProductSchema.partial();
+export const getProductsQuerySchema = z.object({
+  nombre: z.string().optional(),
+  page: z
+    .string()
+    .regex(/^\d+$/, "la pagina debe ser un número")
+    .transform(Number)
+    .default(1),
+  limit: z
+    .string()
+    .regex(/^\d+$/, "el limite debe ser un número")
+    .transform(Number)
+    .default(5), //5 por que no hay muchos datos
+  maxPrice: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "el precio debe ser un número")//la ia me dijo para que sean numeros decimales
+    .transform(Number)
+    .optional(),
+});
 
+export type GetProductsQueryInput = z.infer<typeof getProductsQuerySchema>;
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;

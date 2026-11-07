@@ -1,9 +1,48 @@
 import pool from "../config/db.js";
 
 // 1. Obtener todos los productos del menú
-export const getAllProducts = async () => {
-    const result = await pool.query("SELECT * FROM producto;");
-    return result.rows;
+export const getAllProducts = async (filters: {
+    nombre?: string | undefined;
+    maxPrice?: number | undefined;
+    limit: number;
+    page: number;
+}) => {
+    const { nombre, maxPrice, page, limit } = filters;
+
+    let sqlBase = "WHERE 1=1";
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (nombre) {
+        sqlBase += ` AND nombre LIKE $${paramIndex}`;
+        values.push(`%${nombre}%`);
+        paramIndex++;
+    }
+
+    if (maxPrice) {
+        sqlBase += ` AND precio <= $${paramIndex}`;
+        values.push(maxPrice);
+        paramIndex++;
+    }
+
+    const countQuery = `SELECT COUNT(*) FROM producto ${sqlBase};`;
+    const countResult = await pool.query(countQuery, values);
+    const totalItem = parseInt(countResult.rows[0].count, 10);
+
+    const offset = (page - 1) * limit;
+    const dataQuery = `SELECT * FROM producto ${sqlBase} ORDER BY id ASC LIMIT $${paramIndex} OFFSET $${paramIndex + 1};`;
+    const queryValues = [...values, limit, offset];
+    const { rows } = await pool.query(dataQuery, queryValues);
+
+    return {
+        data: rows,
+        pagination: {
+            totalItem,
+            itemsPerPage: limit,
+            currentPage: page,
+            totalPages: Math.ceil(totalItem / limit),
+        },
+    };
 };
 
 // 2. Obtener un producto por su ID

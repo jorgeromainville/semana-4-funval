@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express";
 import * as productModel from "../models/product.model.js";
+import { getProductsQuerySchema } from "../schemas/productSchema.js";
 
 // GET /api/menu
 export const getMenu = async (req: Request, res: Response) => {
@@ -8,7 +9,15 @@ export const getMenu = async (req: Request, res: Response) => {
        #swagger.summary = 'Obtiene todos los productos del menú' 
     */
     try {
-        const products = await productModel.getAllProducts();
+        const result = getProductsQuerySchema.safeParse(req.query);
+        if (!result.success) {
+            return res.status(400).json({
+                error: "Parámetros de consulta inválidos",
+                detalles: result.error.format(),
+            });
+        }
+        const { nombre, maxPrice, limit, page } = result.data;
+        const products = await productModel.getAllProducts({nombre, maxPrice, limit, page});
         res.json(products);
     } catch (error) {
         console.error("Error al obtener el menú:", error);
